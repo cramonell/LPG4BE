@@ -4,7 +4,7 @@ import os
 from utils.Graph2neo4j import GraphToNeo4jImporter
 from utils.IFC2Graph import IfcToGraphConverter
 
-def convert_ifc_to_neo4j(file: str, file_id, db_name = "neo4j", user_name = 'neo4j', password="PORTERO96"):
+def convert_ifc_to_neo4j(file: str, file_id, db_name = "neo4j", user_name = 'neo4j', password="password"):
     
     path = None
     # check if file is UploadFile or a path

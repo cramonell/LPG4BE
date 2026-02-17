@@ -9,7 +9,7 @@ from neo4j import GraphDatabase
 
 
 class GraphToNeo4jImporter():
-    def __init__(self, nodes : Dict[str,Any], relations : Dict[str, Any], db_name: str, username: str="neo4j", password:str="PORTERO96", node_merge_params:Optional[List[str]]= None, rel_match_params:Optional[Dict[str, Any]] = None, uri:str ="bolt://localhost:7687", logger: logging.Logger = logging.getLogger(__name__)) -> None:
+    def __init__(self, nodes : Dict[str,Any], relations : Dict[str, Any], db_name: str, username: str="neo4j", password:str="password", node_merge_params:Optional[List[str]]= None, rel_match_params:Optional[Dict[str, Any]] = None, uri:str ="bolt://localhost:7687", logger: logging.Logger = logging.getLogger(__name__)) -> None:
 
         self.logger =  logger
         self.driver= self.connect_database(username, password, uri, db_name)
