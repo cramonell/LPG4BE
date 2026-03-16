@@ -1,19 +1,35 @@
-IFC2Neo4j converts the non-geometrical information of IFC files in STEP format to Neo4j.
+# IFC2Neo4j
 
-The conversion process is executed in two different steps:
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/)
+[![Neo4j](https://img.shields.io/badge/Neo4j-4.4%2B-blue)](https://neo4j.com/)
 
-The first step is translating the entities and relationships of the IFC file into nodes and relations. For this purpose, a generic property-graph data model is generated. This model is used to ensure that the data transformation is consistent for all nodes and relations in the graph. [Pydantic](https://pydantic.dev/opensource) is used for this purpose.
+**IFC2Neo4j** is a data transformation tool that converts the non-geometrical information of Industry Foundation Classes (IFC) files in STEP format into a Neo4j graph database.
 
-In the second step, the [Neo4j Python driver](https://neo4j.com/docs/api/python-driver/current/) is utilized to import the nodes and relations into the database. Nodes and relations are imported to the database using Cypher statements. Utilizing this two-step process allows decoupling the whole
-conversion tool from the target graph DB. This second step can customized to import the IFC data into other available graph databases based on the LPG model.
+## ⚙️ Conversion Process
 
-The conversion process iterates over all the elements in the IFC file. The process results in a property graph that is close to the concepts and relations defined in the IFC schema. However, it does not maintain backward compatibility with the IFC format due to modifications that do not conform with the IFC Schema. The transformation process is made considering the following aspects:
+The conversion is executed in a decoupled, two-step pipeline. Because the data parsing is separated from the database ingestion, the second step can be easily customized to target other Labeled Property Graph (LPG) databases instead of Neo4j.
 
-1. Nodes in the graph correspond to IFC entities defined in the imported file. Each node is assigned with labels representing the IFC class and its parent classes in the IFC hierarchy.
-2. All the inherited properties for IFC schema associated with the IFC entity are associated to its node in the graph.
-3. IfcPropertySetDefinitions associated with the entity in the file are also included as part of its corresponding node properties.
-4. The IFC-GUID property is expanded to stadard GUIDs.
-5. Every node contains additional ’system properties’ that are not part of the IFC schema. They are used to improve the filtering and usability of the data within the system.
-6. All the geometry-related classes are excluded from the conversion. Instead, the presence of a geometric representation is indicated by including a Booleansystem property in the node called presentation. If presentation is true, the geometry can be obtained from the GLB file resulting from the IfcConvert process using the GUID.
-7. IfcRelationships are not included in the conversion as nodes in order to optimize the amount of graph data generated. They are bridged to enable direct relations between entities in the graph.
+1. **Data Modeling and Translation:** The entities and relationships within the IFC file are translated into a generic property-graph data model. This step utilizes **Pydantic** to ensure that the data transformation remains strictly consistent for all nodes and relations in the graph.
+2. **Database Import:** The **Neo4j Python driver** is then used to ingest the nodes and relations into the database via Cypher statements.
 
+> **Note on Compatibility:** While the conversion process iterates over all elements to create a graph that closely mirrors the IFC schema, it **does not** maintain backward compatibility with the original IFC format. This is due to intentional modifications made to optimize the data for a graph structure.
+
+---
+
+## 📐 Transformation Rules
+
+The transformation from the IFC schema to the property graph is governed by the following rules:
+
+* **Nodes and Labels:** Nodes in the graph correspond directly to the IFC entities defined in the file. Each node is assigned labels that represent its specific IFC class as well as its parent classes in the IFC hierarchy.
+* **Property Inheritance:** All properties inherited from the IFC schema that are associated with an entity are mapped directly to its corresponding graph node.
+* **Property Sets:** Any `IfcPropertySetDefinitions` associated with an entity in the file are absorbed and included as properties on the node itself.
+* **GUID Formatting:** The standard `IFC-GUID` property is expanded into standard GUIDs.
+* **System Properties:** Nodes are enriched with additional "system properties" that are not part of the standard IFC schema. These are injected to improve data filtering and overall usability within the database.
+* **Geometry Handling:** All geometry-related classes are excluded from the conversion to keep the graph lightweight. 
+    * Instead, a boolean system property called `presentation` is added to the node. 
+    * If `presentation` is `true`, the physical geometry can be retrieved from a companion GLB file (generated via the `IfcConvert` process) by referencing the node's GUID.
+* **Relationship Bridging:** To optimize the size and query performance of the graph, `IfcRelationships` are *not* imported as standalone nodes. Instead, they are bridged to create direct relationships (edges) between the relevant entity nodes.
+
+![IFC to Neo4j Porperties](props.png)
+![IFC to Neo4j Relations](rels.png)
